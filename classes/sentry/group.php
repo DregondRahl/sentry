@@ -73,7 +73,7 @@ class Sentry_Group
 		          ->execute();
 
 		// if there was a result - update user
-		if (count($group))
+		if ( ! empty($group))
 		{
 			$this->group = $group->current();
 		}
