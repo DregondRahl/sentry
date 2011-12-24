@@ -81,7 +81,7 @@ class Sentry_User
 				->execute();
 
 			// if there was a result - update user
-			if ( ! empty($user))
+			if (count($user))
 			{
 				$temp = $user->current();
 
@@ -91,7 +91,7 @@ class Sentry_User
 					->where('user_id', $temp['id'])
 					->execute();
 
-				$temp['metadata'] = ( ! empty($metadata)) ? $metadata->current() : array();
+				$temp['metadata'] = (count($metadata)) ? $metadata->current() : array();
 
 				$this->user = $temp;
 			}
@@ -252,6 +252,9 @@ class Sentry_User
 		// init update array
 		$update = array();
 
+		// init user
+		$update_user = null;
+		
 		// init user metatdata
 		$update_metadata = null;
 
@@ -572,7 +575,7 @@ class Sentry_User
 	 */
 	public function add_to_group($id)
 	{
-		if ( ! $this->in_group($id))
+		if ($this->in_group($id))
 		{
 			throw new \SentryGroupException(__('user_already_in_group', array('group' => $id)));
 		}
@@ -608,7 +611,7 @@ class Sentry_User
 	 */
 	public function remove_from_group($id)
 	{
-		if ($this->in_group($id))
+		if ( ! $this->in_group($id))
 		{
 			throw new \SentryGroupException(__('sentry.user_not_in_group', array('group' => $id)));
 		}
@@ -735,14 +738,14 @@ class Sentry_User
 			->limit(1)
 			->execute()->current();
 
-		if ($result)
+		if ( ! empty($result))
 		{
 			$metadata = DB::select()
 				->from($this->table_metadata)
 				->where('user_id', $result['id'])
 				->execute();
 
-			$result['metadata'] = ( ! empty($metadata)) ? $metadata->current() : array();
+			$result['metadata'] = (count($metadata)) ? $metadata->current() : array();
 
 			return $result;
 		}

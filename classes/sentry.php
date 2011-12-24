@@ -111,7 +111,7 @@ class Sentry
 				static::$user_cache[$id] = new Sentry_User($id);
 				return static::$user_cache[$id];
 			}
-			catch (SentryUserNotFoundException $e)
+			catch (\SentryUserNotFoundException $e)
 			{
 				throw new \SentryAuthException($e->getMessage());
 			}
@@ -181,7 +181,7 @@ class Sentry
 				{
 					$attempts->suspend();
 				}
-				catch(SentryUserSuspendedException $e)
+				catch(\SentryUserSuspendedException $e)
 				{
 					throw new \SentryAuthException($e->getMessage());
 				}
@@ -429,7 +429,7 @@ class Sentry
 				return false;
 			}
 		}
-		catch (SentryUserNotFoundException $e)
+		catch (\SentryUserNotFoundException $e)
 		{
 			return false;
 		}
@@ -534,7 +534,7 @@ class Sentry
 		}
 
 		// check password
-		if (!$user->check_password($password, $field))
+		if ( ! $user->check_password($password, $field))
 		{
 			if (static::$suspend and ($field == 'password' or $field == 'password_reset_hash'))
 			{
