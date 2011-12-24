@@ -73,7 +73,7 @@ class Sentry_Group
 		          ->execute();
 
 		// if there was a result - update user
-		if (count($group))
+		if ( ! empty($group))
 		{
 			$this->group = $group->current();
 		}
@@ -215,7 +215,7 @@ class Sentry_Group
 			->on(static::$join_table.'.group_id', '=', $users_table.'.id')
 			->execute()->as_array();
 
-		if (count($users) == 0)
+		if ( ! empty($users))
 		{
 			return array();
 		}

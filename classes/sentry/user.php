@@ -81,7 +81,7 @@ class Sentry_User
 				->execute();
 
 			// if there was a result - update user
-			if ( ! empty($user))
+			if (count($user))
 			{
 				$temp = $user->current();
 
@@ -572,7 +572,7 @@ class Sentry_User
 	 */
 	public function add_to_group($id)
 	{
-		if ( ! $this->in_group($id))
+		if ($this->in_group($id))
 		{
 			throw new \SentryGroupException(__('user_already_in_group', array('group' => $id)));
 		}
@@ -608,7 +608,7 @@ class Sentry_User
 	 */
 	public function remove_from_group($id)
 	{
-		if ($this->in_group($id))
+		if ( ! $this->in_group($id))
 		{
 			throw new \SentryGroupException(__('sentry.user_not_in_group', array('group' => $id)));
 		}
