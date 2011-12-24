@@ -169,6 +169,7 @@ class Sentry_User
 				{
 					return base64_encode($user[$this->login_column]).'/'.$hash;
 				}
+				
 				return false;
 			}
 
@@ -177,6 +178,7 @@ class Sentry_User
 			{
 				throw new \SentryUserException(__('sentry.email_already_in_use'));
 			}
+			
 			throw new \SentryUserException(
 				__('sentry.column_already_exists', array('column' => $this->login_column_str))
 			);
@@ -185,10 +187,10 @@ class Sentry_User
 		// set new user values
 		$new_user = array(
 			$this->login_column => $user[$this->login_column],
-			'password' => $this->generate_password($user['password']),
-			'created_at' => time(),
-			'activated' => ($activation) ? 0 : 1,
-			'status' => 1,
+				'password' => $this->generate_password($user['password']),
+				'created_at' => time(),
+				'activated' => ($activation) ? 0 : 1,
+				'status' => 1,
 		) + $user;
 
 		// check for metadata
@@ -212,18 +214,22 @@ class Sentry_User
 		// insert new user
 		list($insert_id, $rows_affected) = DB::insert($this->table)->set($new_user)->execute();
 
-		// insert into metadata
-		$metadata = array(
-			'user_id' => $insert_id
-		) + $metadata;
+		if ($rows_affected > 0)
+		{
+			// insert into metadata
+			$metadata = array(
+					'user_id' => $insert_id
+			) + $metadata;
 
-		DB::insert($this->table_metadata)->set($metadata)->execute();
-
+			DB::insert($this->table_metadata)->set($metadata)->execute();
+		}
+		
 		// return activation hash for emailing if activation = true
 		if ($activation)
 		{
 			return ($rows_affected > 0) ? base64_encode($user[$this->login_column]).'/'.$hash : false;
 		}
+		
 		return ($rows_affected > 0) ? (int) $insert_id : false;
 	}
 
@@ -257,8 +263,7 @@ class Sentry_User
 				__('sentry.column_already_exists', array('column' => $this->login_column_str))
 			);
 		}
-		elseif (array_key_exists($this->login_column, $fields) and
-				$fields[$this->login_column] == '')
+		elseif (array_key_exists($this->login_column, $fields) and $fields[$this->login_column] == '')
 		{
 			throw new \SentryUserException(
 				__('sentry.column_is_empty', array('column' => $this->login_column_str))
@@ -271,8 +276,7 @@ class Sentry_User
 		}
 
 		// if updating email
-		if (array_key_exists('email', $fields) and
-			$fields['email'] != $this->user['email'])
+		if (array_key_exists('email', $fields) and $fields['email'] != $this->user['email'])
 		{
 			// make sure email does not already exist
 			if ($this->user_exists($fields['email'], 'email'))
@@ -372,7 +376,6 @@ class Sentry_User
 		{
 			$update_user = DB::update($this->table)
 				->set($update)
-				->join($this->table_metadata)->on($this->table_metadata.'.user_id', '=', 'users.id')
 				->where('id', $this->user['id'])
 				->execute();
 		}
@@ -419,6 +422,7 @@ class Sentry_User
 		DB::transactional();
 		DB::start_transaction();
 
+		// delete the user groups from the database
 		$delete_user_groups = DB::delete($this->table_usergroups)
 			->where('user_id', $this->user['id'])
 			->execute();
@@ -427,14 +431,20 @@ class Sentry_User
 		$delete_user = DB::delete($this->table)
 			->where('id', $this->user['id'])
 			->execute();
+		
+		// delete user metadata from database
+		$delete_user_metadata = DB::delete($this->table_metadata)
+			->where('user_id', $this->user['id'])
+			->execute();
 
 		// if user was deleted
-		if ($delete_user_groups and $delete_user)
+		if ($delete_user_groups and $delete_user and $delete_user_metadata)
 		{
 			DB::commit_transaction();
 
-			// update user to null
+			// update user and groups to null
 			$this->user = array();
+			$this->groups = array();
 
 			return true;
 		}
@@ -562,9 +572,9 @@ class Sentry_User
 	 */
 	public function add_to_group($id)
 	{
-		if ($this->in_group($id))
+		if ( ! $this->in_group($id))
 		{
-			throw new \SentryGroupException(__('sentry.user_not_in_group', array('group' => $id)));
+			throw new \SentryGroupException(__('user_already_in_group', array('group' => $id)));
 		}
 
 		$field = 'name';
@@ -587,7 +597,7 @@ class Sentry_User
 			'group_id' => $group->get('id'),
 		))->execute();
 
-		return true;
+		return ($rows_affected > 0) ? true : false;
 	}
 
 	/**
@@ -598,7 +608,7 @@ class Sentry_User
 	 */
 	public function remove_from_group($id)
 	{
-		if ( ! $this->in_group($id))
+		if ($this->in_group($id))
 		{
 			throw new \SentryGroupException(__('sentry.user_not_in_group', array('group' => $id)));
 		}
@@ -728,9 +738,9 @@ class Sentry_User
 		if ($result)
 		{
 			$metadata = DB::select()
-					->from($this->table_metadata)
-					->where('user_id', $result['id'])
-					->execute();
+				->from($this->table_metadata)
+				->where('user_id', $result['id'])
+				->execute();
 
 			$result['metadata'] = ( ! empty($metadata)) ? $metadata->current() : array();
 

@@ -534,12 +534,21 @@ class Sentry
 		}
 
 		// check password
-		if ( ! $user->check_password($password, $field))
+		if (!$user->check_password($password, $field))
 		{
 			if (static::$suspend and ($field == 'password' or $field == 'password_reset_hash'))
 			{
-				static::attempts($login_column_value, \Input::real_ip())->add();
+
+				try
+				{
+					static::attempts($login_column_value, \Input::real_ip())->add();
+				}
+				catch (\SentryAttemptsException $e)
+				{
+					throw new \SentryAuthException($e->getMessage());
+				}
 			}
+			
 			return false;
 		}
 

@@ -62,8 +62,7 @@ class Sentry_Attempts
 			}
 		}
 
-		$query = \DB::select()
-			->from(static::$table_suspend);
+		$query = \DB::select()->from(static::$table_suspend);
 
 		if ($this->login_id)
 		{

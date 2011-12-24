@@ -149,10 +149,10 @@ class Sentry_Group
 	 */
 	public function get($field = null)
 	{
-		// make sure a user id is set
+		// make sure a group id is set
 		if (empty($this->group['id']))
 		{
-			throw new \SentryGroupException(__('sentry.no_level_selected'));
+			throw new \SentryGroupException(__('sentry.no_group_selected'));
 		}
 
 		// if no fields were passed - return entire user
@@ -233,7 +233,7 @@ class Sentry_Group
 	}
 
 	/**
-	 * Retruns all groups
+	 * Returns all groups
 	 *
 	 * @return  array
 	 */
