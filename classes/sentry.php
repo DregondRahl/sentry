@@ -343,13 +343,13 @@ class Sentry
 		// if database was updated return confirmation data
 		if ($user->update($update))
 		{
-			$update = array(
+			$reset = array(
 				'email' => $user->get('email'),
-				'password_reset_hash' => $hash,
-				'link' => base64_encode($login_column_value).'/'.$update['password_reset_hash']
+				'username' => $user->get('username'),
+				'password_reset_link' => base64_encode($login_column_value).'/'.$update['password_reset_hash']
 			);
 
-			return $update;
+			return $reset;
 		}
 		else
 		{
@@ -538,7 +538,6 @@ class Sentry
 		{
 			if (static::$suspend and ($field == 'password' or $field == 'password_reset_hash'))
 			{
-
 				try
 				{
 					static::attempts($login_column_value, \Input::real_ip())->add();
