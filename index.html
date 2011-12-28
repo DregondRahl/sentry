@@ -1762,9 +1762,9 @@ catch (SentryAttemptsException $e)
 		<script>
 
 			function initMenu() {
-                $('#menu ul').hide();
+				$('#menu ul').hide();
 				//$('#menu ul:first').show();
-                $('#menu li a').click(function() 
+				$('#menu li a').click(function() 
 				{
 					var checkElement = $(this).next();
 					if ((checkElement.is('ul')) && (checkElement.is(':visible'))) {
@@ -1778,7 +1778,7 @@ catch (SentryAttemptsException $e)
 						return false;
 					}
 				});
-            }
+			}
 
 			$(document).ready(function() {initMenu();});
 
