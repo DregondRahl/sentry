@@ -117,10 +117,10 @@ class Sentry
 			}
 		}
 		// if session exists - default to user session
-		else if(static::check())
+		else if (static::check())
 		{
 			$user_id = Session::get(Config::get('sentry.session_var'));
-			static::$current_user = new \Sentry_User($user_id);
+			static::$current_user = new Sentry_User($user_id);
 			return static::$current_user;
 		}
 
@@ -139,7 +139,7 @@ class Sentry
 	{
 		if ($id)
 		{
-			return new \Sentry_Group($id);
+			return new Sentry_Group($id);
 		}
 
 		return new Sentry_Group();
@@ -343,13 +343,13 @@ class Sentry
 		// if database was updated return confirmation data
 		if ($user->update($update))
 		{
-			$update = array(
+			$reset = array(
 				'email' => $user->get('email'),
-				'password_reset_hash' => $hash,
-				'link' => base64_encode($login_column_value).'/'.$update['password_reset_hash']
+				'username' => $user->get('username'),
+				'password_reset_link' => base64_encode($login_column_value).'/'.$update['password_reset_hash']
 			);
 
-			return $update;
+			return $reset;
 		}
 		else
 		{
@@ -441,9 +441,9 @@ class Sentry
 	 * @param   string  Group name
 	 * @return  bool
 	 */
-	public function group_exists($name)
+	public static function group_exists($name)
 	{
-		$group = DB::select('id')->from(static::$table)->where('name', $name)->limit(1)->execute();
+		$group = \DB::select('id')->from(static::$table)->where('name', $name)->limit(1)->execute();
 
 		return (bool) count($group);
 	}
@@ -538,7 +538,6 @@ class Sentry
 		{
 			if (static::$suspend and ($field == 'password' or $field == 'password_reset_hash'))
 			{
-
 				try
 				{
 					static::attempts($login_column_value, \Input::real_ip())->add();

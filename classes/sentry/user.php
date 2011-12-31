@@ -159,7 +159,7 @@ class Sentry_User
 				// update and resend activation code
 				$this->user = $user_exists;
 
-				$hash = \Str::random('alnum', 24);
+				$hash = Str::random('alnum', 24);
 
 				$update = array(
 					'activation_hash' => $hash
@@ -434,7 +434,7 @@ class Sentry_User
 		$delete_user = DB::delete($this->table)
 			->where('id', $this->user['id'])
 			->execute();
-		
+
 		// delete user metadata from database
 		$delete_user_metadata = DB::delete($this->table_metadata)
 			->where('user_id', $this->user['id'])
@@ -588,9 +588,9 @@ class Sentry_User
 
 		try
 		{
-			$group = new \Sentry_Group($id);
+			$group = new Sentry_Group($id);
 		}
-		catch (SentryGroupNotFoundException $e)
+		catch (\SentryGroupNotFoundException $e)
 		{
 			throw new \SentryGroupException($e->getMessage());
 		}
@@ -624,9 +624,9 @@ class Sentry_User
 
 		try
 		{
-			$group = new \Sentry_Group($id);
+			$group = new Sentry_Group($id);
 		}
-		catch (SentryGroupNotFoundException $e)
+		catch (\SentryGroupNotFoundException $e)
 		{
 			throw new \SentryGroupException($e->getMessage());
 		}
@@ -781,7 +781,7 @@ class Sentry_User
 	 */
 	protected function generate_password($password)
 	{
-		$salt = \Str::random('alnum', 16);
+		$salt = Str::random('alnum', 16);
 
 		return $salt.$this->hash_password($password, $salt);
 	}

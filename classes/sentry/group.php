@@ -17,7 +17,7 @@ use DB;
 use FuelException;
 
 class SentryGroupException extends \FuelException {}
-class SentryGroupNotFoundException extends SentryGroupException {}
+class SentryGroupNotFoundException extends \SentryGroupException {}
 
 /**
  * Handles all of the Sentry group logic.
@@ -99,7 +99,7 @@ class Sentry_Group
 
 		if (Sentry::group_exists($group['name']))
 		{
-			throw new \SentryGroupException(__('sentry.group_already_exists', array('group' => 'name')));
+			throw new \SentryGroupException(__('sentry.group_already_exists', array('group' => $group['name'])));
 		}
 
 		if ( ! array_key_exists('level', $group))
@@ -114,7 +114,7 @@ class Sentry_Group
 
 		list($insert_id, $rows_affected) = DB::insert(static::$table)->set($group)->execute();
 
-		return ($rows_affected > 0) ? $insert_id : false;
+		return ($rows_affected > 0) ? (int) $insert_id : false;
 	}
 
 	/**
@@ -161,7 +161,7 @@ class Sentry_Group
 			return $this->group;
 		}
 		// if field is an array - return requested fields
-		else if (is_array($field))
+		elseif (is_array($field))
 		{
 			$values = array();
 
